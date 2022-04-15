@@ -46,6 +46,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(title: const Text('Take a picture')),
       // You must wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner until the
@@ -121,7 +122,9 @@ class DisplayPictureScreen extends StatelessWidget {
           children: [
             FloatingActionButton(
               child: const Icon(Icons.cancel),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pop(context);
+              },
               heroTag: "left",
             ),
             FloatingActionButton(

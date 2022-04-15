@@ -2,7 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'camera_page.dart';
 
-var firstCamera;
+late var firstCamera;
 
 Future<void> main() async {
 // Ensure that plugin services are initialized so that `availableCameras()`
@@ -22,50 +22,64 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.lightBlue,
-      ),
-      home: const MyHomePage(
-        title: 'Outfit Tracker',
-      ),
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.lightBlue,
+        ),
+        home: const MyHomePage());
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
+  const MyHomePage({Key? key}) : super(key: key);
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  /*int _counter = 0;
+  String month = "January";
+  int _counter = 31;
+  double _zoom = 150;
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
-  }*/
+  }
+
+  void _changeMonth() {
+    setState(() {
+      month += "lol";
+    });
+  }
+
+  void _zoomIn() {
+    setState(() {
+      _zoom -= 30;
+    });
+  }
+
+  void _zoomOut() {
+    setState(() {
+      _zoom += 30;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(month),
       ),
       body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 150,
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: _zoom,
             childAspectRatio: (375 /
                 812)), //(width / height) of each image:: this is for iphone 11 pro),
         primary:
             true, //This means that user can scroll farther than loaded in by flutter
-        itemCount: 31,
-        itemBuilder: (context, index) =>
-            calendarButton(AssetImage("assets/images/franFace.png"), index),
+        itemCount: _counter,
+        itemBuilder: (context, index) => calendarButton(index),
       ),
       floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.camera_alt),
@@ -73,14 +87,60 @@ class _MyHomePageState extends State<MyHomePage> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TakePictureScreen(camera: firstCamera),
+                  builder: (context) => TakePictureScreen(
+                      camera:
+                          firstCamera), //If camera button is pressed, go to camera screen
                 ));
           }),
-      drawer: const Drawer(child: Center(child: Text("your mom hehe"))),
+      drawer: SizedBox(
+        width: 250,
+        child: Drawer(
+          child: Container(
+            padding: const EdgeInsets.only(top: 30),
+            child: Column(
+              children: [
+                const Text("Outfit Tracker",
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold)),
+                ElevatedButton(
+                    onPressed: () {
+                      if (_zoom > 60) _zoomIn();
+                    },
+                    child: Row(
+                      children: const [
+                        Icon(Icons.calendar_month_outlined),
+                        Text("Change Month"),
+                      ],
+                    )),
+                ElevatedButton(
+                    onPressed: () {
+                      if (_zoom < 150) _zoomOut();
+                    },
+                    child: Row(
+                      children: const [
+                        Icon(Icons.info),
+                        Text("About"),
+                      ],
+                    )),
+                ElevatedButton(
+                    onPressed: () {},
+                    child: Row(
+                      children: const [
+                        Icon(Icons.handyman),
+                        Text("Settings"),
+                      ],
+                    )),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget calendarButton(AssetImage assetPath, int index) {
+  Widget calendarButton(int index) {
     return OutlinedButton(
       child: Container(
         alignment: Alignment.topLeft,
@@ -88,11 +148,12 @@ class _MyHomePageState extends State<MyHomePage> {
           (index + 1).toString(),
           textAlign: TextAlign.left,
           textScaleFactor: 1.5,
+          style: const TextStyle(color: Colors.black),
         ),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
-            fit: BoxFit.fill,
-            image: assetPath,
+            fit: BoxFit.contain,
+            image: AssetImage("assets/images/wowie.png"),
           ),
         ),
       ),
