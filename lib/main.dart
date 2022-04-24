@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'camera_page.dart';
+import 'month_chooser.dart';
 
 late var firstCamera;
 
@@ -92,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           firstCamera), //If camera button is pressed, go to camera screen
                 ));
           }),
-      drawer: SizedBox(
+      endDrawer: SizedBox(
         width: 250,
         child: Drawer(
           child: Container(
@@ -106,7 +107,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontWeight: FontWeight.bold)),
                 ElevatedButton(
                     onPressed: () {
-                      if (_zoom > 60) _zoomIn();
+                      //if (_zoom > 60) _zoomIn();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const MonthPage()));
                     },
                     child: Row(
                       children: const [
@@ -116,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     )),
                 ElevatedButton(
                     onPressed: () {
-                      if (_zoom < 150) _zoomOut();
+                      //if (_zoom < 150) _zoomOut();
                     },
                     child: Row(
                       children: const [
@@ -141,23 +146,26 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget calendarButton(int index) {
-    return OutlinedButton(
-      child: Container(
-        alignment: Alignment.topLeft,
-        child: Text(
-          (index + 1).toString(),
-          textAlign: TextAlign.left,
-          textScaleFactor: 1.5,
-          style: const TextStyle(color: Colors.black),
+    return Container(
+      alignment: Alignment.topLeft,
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          fit: BoxFit.fill,
+          image: AssetImage("assets/images/franFace.png"),
         ),
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            fit: BoxFit.contain,
-            image: AssetImage("assets/images/wowie.png"),
+      ),
+      child: OutlinedButton(
+        onPressed: () {},
+        child: SizedBox(
+          width: 375,
+          height: 812,
+          child: Text(
+            (index + 1).toString(),
+            textScaleFactor: 1.5,
+            style: const TextStyle(color: Colors.black),
           ),
         ),
       ),
-      onPressed: () {},
     );
   }
 }
