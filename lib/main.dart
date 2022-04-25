@@ -1,7 +1,14 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'camera_page.dart';
 import 'month_chooser.dart';
+import 'dart:async';
+import 'package:rxdart/rxdart.dart';
+
+StreamController<String> monthController = BehaviorSubject<String>();
+StreamController<int> yearController = BehaviorSubject<int>();
+StreamController<int> dayController = BehaviorSubject<int>();
 
 late var firstCamera;
 
@@ -19,7 +26,7 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,30 +34,59 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.lightBlue,
         ),
-        home: const MyHomePage());
+        home: MyHomePage(monthController.stream, yearController.stream,
+            dayController.stream));
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+  const MyHomePage(this.monthStream, this.yearStream, this.dayStream,
+      {Key? key})
+      : super(key: key);
+  final Stream<String> monthStream;
+  final Stream<int> yearStream;
+  final Stream<int> dayStream;
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String month = "January";
-  int _counter = 31;
+  String _month = "January";
+  int _year = 2022;
+  int _numDays = 31;
   double _zoom = 150;
+  AssetImage _image = AssetImage("assets/images/franFace.png");
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+  @override
+  void initState() {
+    super.initState();
+    widget.yearStream.listen((year) {
+      _changeYear(year);
+    });
+    widget.monthStream.listen((month) {
+      _changeMonth(month);
+    });
+    widget.dayStream.listen((days) {
+      _changeNumDays(days);
     });
   }
 
-  void _changeMonth() {
+  void _changeYear(int year) {
     setState(() {
-      month += "lol";
+      _year = year;
+    });
+  }
+
+  void _changeMonth(String month) {
+    setState(() {
+      _month = month;
+    });
+  }
+
+  void _changeNumDays(int num) {
+    setState(() {
+      _numDays = num;
     });
   }
 
@@ -66,11 +102,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  AssetImage _buildImage(int index) {
+    if (index < 10) return AssetImage("assets/images/saul goodman.jpg");
+    return _image;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(month),
+        title: Text(_month + ", " + _year.toString()),
       ),
       body: GridView.builder(
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -79,8 +120,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 812)), //(width / height) of each image:: this is for iphone 11 pro),
         primary:
             true, //This means that user can scroll farther than loaded in by flutter
-        itemCount: _counter,
-        itemBuilder: (context, index) => calendarButton(index),
+        itemCount: _numDays,
+        itemBuilder: (context, index) {
+          return calendarButton(index, _numDays);
+        },
       ),
       floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.camera_alt),
@@ -106,37 +149,40 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: Colors.blue,
                         fontWeight: FontWeight.bold)),
                 ElevatedButton(
-                    onPressed: () {
-                      //if (_zoom > 60) _zoomIn();
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const MonthPage()));
-                    },
-                    child: Row(
-                      children: const [
-                        Icon(Icons.calendar_month_outlined),
-                        Text("Change Month"),
-                      ],
-                    )),
+                  onPressed: () {
+                    //if (_zoom > 60) _zoomIn();
+                    Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                            builder: (context) => const MonthPage()));
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(Icons.calendar_month_outlined),
+                      Text("Change Month"),
+                    ],
+                  ),
+                ),
                 ElevatedButton(
-                    onPressed: () {
-                      //if (_zoom < 150) _zoomOut();
-                    },
-                    child: Row(
-                      children: const [
-                        Icon(Icons.info),
-                        Text("About"),
-                      ],
-                    )),
+                  onPressed: () {
+                    //if (_zoom < 150) _zoomOut();
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(Icons.info),
+                      Text("About"),
+                    ],
+                  ),
+                ),
                 ElevatedButton(
-                    onPressed: () {},
-                    child: Row(
-                      children: const [
-                        Icon(Icons.handyman),
-                        Text("Settings"),
-                      ],
-                    )),
+                  onPressed: () {},
+                  child: Row(
+                    children: const [
+                      Icon(Icons.handyman),
+                      Text("Settings"),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -145,13 +191,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget calendarButton(int index) {
+  Widget calendarButton(int index, int numDays) {
     return Container(
       alignment: Alignment.topLeft,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         image: DecorationImage(
           fit: BoxFit.fill,
-          image: AssetImage("assets/images/franFace.png"),
+          image: _buildImage(index),
         ),
       ),
       child: OutlinedButton(
@@ -162,7 +208,8 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Text(
             (index + 1).toString(),
             textScaleFactor: 1.5,
-            style: const TextStyle(color: Colors.black),
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold),
           ),
         ),
       ),
